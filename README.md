@@ -1,10 +1,10 @@
 # IRetry
 **IRetry**是一个基于**rxjava**编写的重试封装库
-##功能
+## 功能
 能够管理**rxjava**重试思路，解决并发请求触发重试逻辑重复调用
 例如token的刷新处理，做到n个请求只会触发一个token刷新，然后通知源请求重试
 
-##思维图
+## 思维图
 
  ![Alt](/resource/logic_logo.png)
 
