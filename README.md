@@ -149,10 +149,10 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
 	```
 	dependencies {
 	       ...
-    	 implementation 'com.github.CFlingchen:IRetry:v1.0'
+    	 implementation 'com.github.CFlingchen:IRetry:v1.1'
       }
 	
 	```
  ## 版本迭代
-
+* v1.1 优化测试案例
 * v1.0 首次上传
