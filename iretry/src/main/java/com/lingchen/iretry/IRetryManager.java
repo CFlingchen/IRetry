@@ -91,7 +91,7 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
                 IRetryLog.i("距离上个结果相差很短 直接发送最后一个结果...");
                 sendResult(iRetryResult.getResult(), false);
             } else {
-                IRetryLog.i("开始创建获取token请求任务");
+                IRetryLog.i("开始创建请求任务");
                 createObservableAndSend();
             }
         } else {

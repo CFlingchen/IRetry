@@ -1,18 +1,15 @@
 package com.lingchen.iretrydemo;
 
-import android.util.Log;
 import android.view.View;
 
 import com.lingchen.iretry.IRetryLog;
 import com.lingchen.iretry.IRetryManager;
 import com.lingchen.iretrydemo.iretry.SimpleNetRetryManager;
-import com.lingchen.iretrydemo.iretry.SimpleTokenRetryManager;
 
 import java.util.Random;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -37,7 +34,7 @@ public class TestNetActivity extends BaseActivity {
     public void test(View view) {
         //模拟网络没有 自动去检测
         SimpleNetRetryManager.hasNet = false;
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             sendPost(i);
         }
     }

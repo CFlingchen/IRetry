@@ -7,7 +7,12 @@
 ##思维图
 
  ![Alt](/resource/logic_logo.png)
- 
+
+## 效果图
+网络测试的效果图 请求途中打开网络
+
+![Alt](/resource/test_net.png)
+
 ## 使用
 
  参照**Demo**中 **SimpleNetRetryManager**与**SimpleTokenRetryManager**自己扩展与编写
@@ -18,9 +23,7 @@
 **IRetry**默认引入了**rxjava**和**rxandroid**
 
 IRetryManager是扩展基类,所有扩展需要继承该类 并且完成对应的方法
-```java
 
-```
 ```java
 /**
  * Author    lingchen
