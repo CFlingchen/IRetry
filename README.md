@@ -133,11 +133,11 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
    ```
 
    allprojects {
-   		repositories {
-   		 ...
-   		 maven { url 'https://jitpack.io' }
-   		 }
-   	} 
+   	repositories {
+   	...
+   	maven { url 'https://jitpack.io' }
+   	}
+  } 
    	
    ```
    
@@ -146,7 +146,7 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
 	```
 	dependencies {
 	       ...
-    	   implementation 'com.github.CFlingchen:IRetry:v1.0'
+    	 implementation 'com.github.CFlingchen:IRetry:v1.0'
       }
 	
 	```
