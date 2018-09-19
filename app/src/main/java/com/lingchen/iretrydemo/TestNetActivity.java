@@ -3,6 +3,7 @@ package com.lingchen.iretrydemo;
 import android.view.View;
 
 import com.lingchen.iretry.IRetryLog;
+import com.lingchen.iretry.IRetryManager;
 import com.lingchen.iretrydemo.iretry.SimpleNetRetryManager;
 import com.lingchen.iretrydemo.iretry.SimpleTokenRetryManager;
 
@@ -44,7 +45,13 @@ public class TestNetActivity extends BaseActivity {
      * 模仿请求
      */
     public void sendPost(int tag) {
-        addDisposable(SimpleNetRetryManager.newInstance().work(() -> send(tag))
+        addDisposable(SimpleNetRetryManager.newInstance().work(new IRetryManager.WorkObservable<BaseEntry>() {
+            @Override
+            public Observable<BaseEntry> create() {
+                //这里需要注意 这里不能添加任何其他操作符 否则无效
+                return send(tag);
+            }
+        })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(integer -> IRetryLog.e(String.format("请求%d 成功", tag, integer.toString())),
