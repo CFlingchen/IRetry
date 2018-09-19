@@ -46,6 +46,17 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
      */
     protected abstract T createSuccess();
 
+    /**
+     * 触发刷新数据  如调用刷新token方法
+     *
+     * @see #sendSuccess()  触发重试
+     * @see #sendError(Throwable) 将不会触发重试
+     */
+    public abstract void createObservableAndSend();
+
+    /**
+     * 设置结果监听  可以用来记录结果 设置结果的超市时间
+     */
     public void setRetryResult(IRetryResult<T> iRetryResult) {
         this.iRetryResult = iRetryResult;
     }
@@ -81,7 +92,7 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
                 sendResult(iRetryResult.getResult(), false);
             } else {
                 IRetryLog.i("开始创建获取token请求任务");
-                createTokenObservableAndSend();
+                createObservableAndSend();
             }
         } else {
             IRetryLog.i("任务正在进行...");
@@ -134,11 +145,6 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
             subject.onNext(result);
         }
     }
-
-    /**
-     * 生成token
-     */
-    public abstract void createTokenObservableAndSend();
 
 
     @Override

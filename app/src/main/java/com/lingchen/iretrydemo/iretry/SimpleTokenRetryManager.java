@@ -24,7 +24,8 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
     //外部模仿请求的时候 根据此值来判断
     //1 为成功
     public static int token;
-
+    //随即成功
+    Random random = new Random();
     private volatile static SimpleTokenRetryManager tokenManagerDef;
 
     public static synchronized SimpleTokenRetryManager newInstance() {
@@ -38,17 +39,25 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
         setRetryResult(IRetry.makeIRetryResult(5000));
     }
 
+    /**
+     * 创建error对象 这个只是用来标记 直接new即可
+     */
     @Override
     protected BaseEntry createError() {
         return new BaseEntry();
     }
 
+    /**
+     * 创建success对象 这个只是用来标记 直接new即可
+     */
     @Override
     protected BaseEntry createSuccess() {
         return new BaseEntry();
     }
 
-
+    /**
+     * 检查结果
+     */
     @Override
     public BaseEntry checked(BaseEntry data) throws Exception {
         //这里我只是判断了code  大家可以根据实际情况来分别
@@ -57,10 +66,11 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
         return data;
     }
 
-    Random random = new Random();
-
+    /**
+     * 创建请求
+     */
     @Override
-    public void createTokenObservableAndSend() {
+    public void createObservableAndSend() {
         //取消上一次监听
         clear();
         addDisposable(Single.create((SingleOnSubscribe<Integer>) emitter -> {
@@ -86,6 +96,12 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
                 .subscribe());
     }
 
+    /**
+     * 拦截异常
+     *
+     * @param throwable 异常
+     * @return 将会触发重新请求
+     */
     @Override
     public boolean intercept(Throwable throwable) {
         return throwable.getMessage().equals("token过期");

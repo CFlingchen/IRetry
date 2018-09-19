@@ -57,7 +57,7 @@ public class SimpleNetRetryManager extends IRetryManager<BaseEntry> {
 
 
     @Override
-    public void createTokenObservableAndSend() {
+    public void createObservableAndSend() {
         //取消上一次监听
         clear();
         addDisposable(NetWorksFlowable.single(App.getApp())

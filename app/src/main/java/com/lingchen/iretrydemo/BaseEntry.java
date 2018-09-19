@@ -31,6 +31,18 @@ public class BaseEntry<T> {
         this.data = data;
     }
 
+    public int getCode() {
+        return code;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public T getData() {
+        return data;
+    }
+
     public boolean isSuccess() {
         return code == SUCCESS;
     }
