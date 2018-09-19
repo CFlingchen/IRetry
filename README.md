@@ -12,8 +12,8 @@
 
  参照**Demo**中 **SimpleNetRetryManager**与**SimpleTokenRetryManager**自己扩展与编写
  demo中也模拟了实际请求或者自己扩展
-
-##扩展（token为例子）
+ 
+## 扩展（token为例子）
 
 **IRetry**默认引入了**rxjava**和**rxandroid**
 
@@ -120,7 +120,7 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
 
 ```
 
-##注意
+## 注意
 
  在使用过程中work方法里面的观察者创建后面不能追加任何操作符,可以在work方法之后追加,如下：
  
@@ -150,4 +150,6 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
       }
 	
 	```
- 
+ ## 版本迭代
+
+* v1.0 首次上传
