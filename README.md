@@ -7,7 +7,7 @@
  参照**Demo**中 **SimpleNetRetryManager**与**SimpleTokenRetryManager**自己扩展与编写
  demo中也模拟了实际请求或者自己扩展
  
- ![Alt](/QZ0K@H{FOI@OWK{IMCJ4JY4.jpg)
+ ![Alt](/resource/QZ0K@H%7BFOI@OWK%7BIMCJ4JY4.png)
  
  1. 
  2. 在创作中心设置你喜爱的代码高亮样式，Markdown **将代码片显示选择的高亮样式** 进行展示；
