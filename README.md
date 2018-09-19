@@ -1,2 +1,2 @@
 # IRetry
-Rxjava retry encapsulation library
+IRetry是一个基于rxjava编写的重试封装库

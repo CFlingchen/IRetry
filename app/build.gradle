@@ -39,5 +39,6 @@ dependencies {
     compile "com.android.support:support-v4:${project.supportLibVersion}"
     compile "com.android.support:appcompat-v7:${project.supportLibVersion}"
     compile "com.android.support:design:${project.supportLibVersion}"
-    implementation project(':iretry')
+    implementation 'com.github.CFlingchen:IRetry:v1.0'
+   // implementation project(':iretry')
 }

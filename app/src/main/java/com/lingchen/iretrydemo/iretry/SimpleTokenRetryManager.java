@@ -19,6 +19,7 @@ import io.reactivex.schedulers.Schedulers;
  */
 
 public class SimpleTokenRetryManager extends IRetryManager<Integer> {
+    //测试使用 正常开发应该自己保存
     public static int token;
 
     private volatile static SimpleTokenRetryManager tokenManagerDef;
