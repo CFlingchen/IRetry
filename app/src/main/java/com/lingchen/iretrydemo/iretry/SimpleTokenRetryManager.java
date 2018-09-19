@@ -61,6 +61,7 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
 
     @Override
     public void createTokenObservableAndSend() {
+        //取消上一次监听
         clear();
         addDisposable(Single.create((SingleOnSubscribe<Integer>) emitter -> {
             IRetryLog.d("开始获取token");

@@ -3,9 +3,9 @@ package com.lingchen.iretrydemo.iretry;
 import com.lingchen.iretry.IRetry;
 import com.lingchen.iretry.IRetryLog;
 import com.lingchen.iretry.IRetryManager;
+import com.lingchen.iretry.rx.NetWorksFlowable;
 import com.lingchen.iretrydemo.App;
 import com.lingchen.iretrydemo.BaseEntry;
-import com.lingchen.iretrydemo.rx.NetWorksFlowable;
 
 import io.reactivex.Flowable;
 import io.reactivex.functions.Consumer;
@@ -58,6 +58,7 @@ public class SimpleNetRetryManager extends IRetryManager<BaseEntry> {
 
     @Override
     public void createTokenObservableAndSend() {
+        //取消上一次监听
         clear();
         addDisposable(NetWorksFlowable.single(App.getApp())
                 .filter(aBoolean -> aBoolean)
