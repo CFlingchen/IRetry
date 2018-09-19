@@ -8,6 +8,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.internal.disposables.ListCompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
@@ -70,6 +72,7 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
 
     @Override
     public void start() {
+        IRetryLog.i("开始触发重试逻辑--开始检测");
         if (isSend.compareAndSet(false, true)) {
             IRetryResult<T> iRetryResult = this.iRetryResult;
             IRetryLog.i("开始判断是否需要发送老的数据");
@@ -77,7 +80,7 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
                 IRetryLog.i("距离上个结果相差很短 直接发送最后一个结果...");
                 sendResult(iRetryResult.getResult(), false);
             } else {
-                IRetryLog.i("开始创建获取token请求");
+                IRetryLog.i("开始创建获取token请求任务");
                 createTokenObservableAndSend();
             }
         } else {
@@ -123,15 +126,12 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
      */
     private void sendResult(T t, boolean saveResult) {
         if (isSend.compareAndSet(true, false)) {
+            T result = t == null ? success : t;
             IRetryResult<T> iRetryResult = this.iRetryResult;
-            if (iRetryResult != null) {
-                if (saveResult) {
-                    iRetryResult.saveResult(t);
-                } else {
-                    iRetryResult.clearResult();
-                }
+            if (iRetryResult != null && saveResult) {
+                iRetryResult.saveResult(result);
             }
-            subject.onNext(t);
+            subject.onNext(result);
         }
     }
 
@@ -147,4 +147,28 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
             throw throwable;
         }
     }
+
+    /**
+     * 管理Rx生命周期
+     */
+    private ListCompositeDisposable listCompositeDisposable = new ListCompositeDisposable();
+
+    protected void addDisposable(Disposable disposable) {
+        if (disposable != null && !disposable.isDisposed()) {
+            listCompositeDisposable.add(disposable);
+        }
+    }
+
+    protected void reDisposable(Disposable disposable) {
+        if (disposable != null) {
+            listCompositeDisposable.remove(disposable);
+        }
+    }
+
+    protected void clear() {
+        if (!listCompositeDisposable.isDisposed()) {
+            listCompositeDisposable.clear();
+        }
+    }
+
 }

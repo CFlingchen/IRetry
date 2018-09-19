@@ -26,7 +26,7 @@ public class IRetry {
     /**
      * 创建超时结果回调
      *
-     * @param outTime 超时时间
+     * @param outTime 超时时间  ms
      */
     public static <T> IRetryResult<T> makeIRetryResult(long outTime) {
         return new TimeOutIRetryResult<>(outTime);

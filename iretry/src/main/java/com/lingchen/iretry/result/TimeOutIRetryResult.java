@@ -1,5 +1,7 @@
 package com.lingchen.iretry.result;
 
+import com.lingchen.iretry.IRetryLog;
+
 /**
  * Author    lingchen
  * Email     838878458@qq.com
@@ -26,14 +28,10 @@ public class TimeOutIRetryResult<T> implements IRetryResult<T> {
     }
 
     @Override
-    public void clearResult() {
-        result = null;
-        lastTime = 0L;
-    }
-
-    @Override
     public boolean intercept() {
-        return result != null && System.currentTimeMillis() - lastTime <= outTime;
+        boolean time = System.currentTimeMillis() - lastTime <= outTime;
+        IRetryLog.i(result + "--" + System.currentTimeMillis() + "--" + lastTime + "--" + time);
+        return result != null && time;
     }
 
     @Override

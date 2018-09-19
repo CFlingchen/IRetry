@@ -15,10 +15,6 @@ public interface IRetryResult<T> {
      */
     void saveResult(T t);
 
-    /**
-     * 清理结果
-     */
-    void clearResult();
 
     /**
      * 是否拦截

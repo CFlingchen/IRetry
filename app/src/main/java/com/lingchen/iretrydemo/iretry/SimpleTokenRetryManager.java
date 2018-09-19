@@ -3,6 +3,7 @@ package com.lingchen.iretrydemo.iretry;
 import com.lingchen.iretry.IRetry;
 import com.lingchen.iretry.IRetryLog;
 import com.lingchen.iretry.IRetryManager;
+import com.lingchen.iretrydemo.BaseEntry;
 
 import java.util.Random;
 
@@ -18,8 +19,10 @@ import io.reactivex.schedulers.Schedulers;
  * Function  模仿token失效拦截
  */
 
-public class SimpleTokenRetryManager extends IRetryManager<Integer> {
-    //测试使用 正常开发应该自己保存
+public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
+    //测试使用 正常开发应该自己保存  这里只是为了测试使用
+    //外部模仿请求的时候 根据此值来判断
+    //1 为成功
     public static int token;
 
     private volatile static SimpleTokenRetryManager tokenManagerDef;
@@ -36,19 +39,21 @@ public class SimpleTokenRetryManager extends IRetryManager<Integer> {
     }
 
     @Override
-    protected Integer createError() {
-        return -1;
+    protected BaseEntry createError() {
+        return new BaseEntry();
     }
 
     @Override
-    protected Integer createSuccess() {
-        return 1;
+    protected BaseEntry createSuccess() {
+        return new BaseEntry();
     }
 
 
     @Override
-    public Integer checked(Integer data) throws Exception {
-        if (data == 0) throw new Exception("token过期");
+    public BaseEntry checked(BaseEntry data) throws Exception {
+        //这里我只是判断了code  大家可以根据实际情况来分别
+        //这里只要抛出异常即可  可以自定义异常
+        if (!data.isSuccess()) throw new Exception("token过期");
         return data;
     }
 
@@ -56,27 +61,28 @@ public class SimpleTokenRetryManager extends IRetryManager<Integer> {
 
     @Override
     public void createTokenObservableAndSend() {
-        Single.create((SingleOnSubscribe<Integer>) emitter -> {
+        clear();
+        addDisposable(Single.create((SingleOnSubscribe<Integer>) emitter -> {
             IRetryLog.d("开始获取token");
             Thread.sleep(random.nextInt(2) * 1000);
             if (random.nextInt(2) == 1) {
-                token = 0;
                 IRetryLog.d("获取token失败");
                 emitter.onSuccess(0);
             } else {
-                token = 1;
                 IRetryLog.d("获取token成功");
                 emitter.onSuccess(1);
             }
         }).doOnSuccess(s -> {
             if (s == 1) {
+                token = 1;
                 sendSuccess();
             } else {
+                token = 0;
                 sendError(new Throwable("获取token失败了"));
             }
         }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+                .subscribe());
     }
 
     @Override
