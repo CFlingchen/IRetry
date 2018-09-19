@@ -5,7 +5,7 @@
 例如token的刷新处理，做到n个请求只会触发一个token刷新，然后通知源请求重试
 
 ##思维图
- ![Alt](/resource/logic.png)
+ ![Alt](/resource/logic_logo.png)
 ## 使用
  参照**Demo**中 **SimpleNetRetryManager**与**SimpleTokenRetryManager**自己扩展与编写
  demo中也模拟了实际请求或者自己扩展
