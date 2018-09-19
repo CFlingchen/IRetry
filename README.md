@@ -5,12 +5,16 @@
 例如token的刷新处理，做到n个请求只会触发一个token刷新，然后通知源请求重试
 
 ##思维图
+
  ![Alt](/resource/logic_logo.png)
+ 
 ## 使用
+
  参照**Demo**中 **SimpleNetRetryManager**与**SimpleTokenRetryManager**自己扩展与编写
  demo中也模拟了实际请求或者自己扩展
- 
+
 ##扩展（token为例子）
+
 **IRetry**默认引入了**rxjava**和**rxandroid**
 
 IRetryManager是扩展基类,所有扩展需要继承该类 并且完成对应的方法
@@ -117,8 +121,8 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
 ```
 
 ##注意
+
  在使用过程中work方法里面的观察者创建后面不能追加任何操作符,可以在work方法之后追加,如下：
- 
  
  ![Alt](/resource/warning.png)
  
