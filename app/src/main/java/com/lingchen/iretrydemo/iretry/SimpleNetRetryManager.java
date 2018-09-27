@@ -8,6 +8,7 @@ import com.lingchen.iretrydemo.App;
 import com.lingchen.iretrydemo.BaseEntry;
 
 import io.reactivex.Flowable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
 /**
@@ -33,17 +34,15 @@ public class SimpleNetRetryManager extends IRetryManager<BaseEntry> {
         setRetryResult(IRetry.makeIRetryResult(1000));
     }
 
-    @Override
-    public BaseEntry checked(BaseEntry data) throws Exception {
-        //因为网络层的错误 基本上都是直接抛出异常 所以这里直接返回数据
-        return data;
-    }
+
 
 
     @Override
     public boolean intercept(Throwable throwable) {
         return throwable.getMessage().equals("网络异常");
     }
+
+
 
     @Override
     protected BaseEntry createError() {
@@ -57,10 +56,8 @@ public class SimpleNetRetryManager extends IRetryManager<BaseEntry> {
 
 
     @Override
-    public void createObservableAndSend() {
-        //取消上一次监听
-        clear();
-        addDisposable(NetWorksFlowable.single(App.getApp())
+    public Disposable createObservableAndSend() {
+        return NetWorksFlowable.single(App.getApp())
                 .filter(aBoolean -> aBoolean)
                 .doOnNext(new Consumer<Boolean>() {
                     @Override
@@ -76,6 +73,6 @@ public class SimpleNetRetryManager extends IRetryManager<BaseEntry> {
                     }
                 })
                 .onErrorResumeNext(Flowable.empty())
-                .subscribe());
+                .subscribe();
     }
 }

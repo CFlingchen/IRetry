@@ -1,11 +1,12 @@
 package com.lingchen.iretry.transformer;
 
-import android.annotation.SuppressLint;
-
-
-import com.lingchen.iretry.ITransformerListener;
+import com.lingchen.iretry.IIRetryManager;
 
 import org.reactivestreams.Publisher;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
@@ -15,7 +16,6 @@ import io.reactivex.Single;
 import io.reactivex.SingleSource;
 import io.reactivex.SingleTransformer;
 import io.reactivex.functions.Function;
-import io.reactivex.subjects.Subject;
 
 /**
  * Author    lingchen
@@ -25,23 +25,26 @@ import io.reactivex.subjects.Subject;
  */
 
 public class DefSingleTransformer<T> implements SingleTransformer<T, T> {
-    private ITransformerListener<T> tiTransformer;
-
-    private Subject<T> subject;
-
-    public static <T> DefSingleTransformer<T> create(ITransformerListener<T> tiTransformer, Subject<T> subject) {
-        return new DefSingleTransformer<T>(tiTransformer, subject);
+    private List<IIRetryManager<T>> mRetryManagers=new ArrayList<>();
+    public static <T> DefSingleTransformer<T> create(IIRetryManager<T>... iRetryManager) {
+        return new DefSingleTransformer<T>(Arrays.asList(iRetryManager));
     }
 
-    private DefSingleTransformer(ITransformerListener<T> tiTransformer, Subject<T> subject) {
-        this.tiTransformer = tiTransformer;
-        this.subject = subject;
+    public static <T> DefSingleTransformer<T> create(List<IIRetryManager<T>> mRetryManagers) {
+        return new DefSingleTransformer<T>(mRetryManagers);
     }
 
-    @SuppressLint("LongLogTag")
-    public boolean isSend(Throwable throwable) {
-        if (tiTransformer == null || subject == null) return false;
-        return tiTransformer.intercept(throwable);
+    private DefSingleTransformer(List<IIRetryManager<T>> mRetryManagers) {
+        this.mRetryManagers.addAll(mRetryManagers);
+    }
+
+    public IIRetryManager getIRetryManager(Throwable throwable) {
+        for (IIRetryManager iiRetryManager:mRetryManagers) {
+            if(iiRetryManager!=null && iiRetryManager.intercept(throwable)){
+                return iiRetryManager;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -52,11 +55,12 @@ public class DefSingleTransformer<T> implements SingleTransformer<T, T> {
                 return throwableFlowable.flatMap(new Function<Throwable, Publisher<T>>() {
                     @Override
                     public Publisher<T> apply(Throwable throwable) throws Exception {
-                        if (isSend(throwable)) {
-                            tiTransformer.start();
-                            return subject.flatMap((Function<T, ObservableSource<T>>) t -> {
+                        IIRetryManager iiRetryManager=getIRetryManager(throwable);
+                        if (iiRetryManager!=null) {
+                            iiRetryManager.start();
+                            return iiRetryManager.getSubject().flatMap((Function<T, ObservableSource<T>>) t -> {
                                 try {
-                                    tiTransformer.checkedResultSuccess(t);
+                                    iiRetryManager.checkedResultSuccess(t);
                                     return Observable.just(t);
                                 } catch (Throwable throwable2) {
                                     throwable2.printStackTrace();

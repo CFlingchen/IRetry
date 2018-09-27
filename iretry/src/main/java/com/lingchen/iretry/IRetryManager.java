@@ -5,9 +5,6 @@ import com.lingchen.iretry.result.IRetryResult;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.internal.disposables.ListCompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
@@ -21,10 +18,19 @@ import io.reactivex.subjects.Subject;
  * 使用者 需要继承 进行扩展
  */
 
-public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformerListener<T> {
+public abstract class IRetryManager<T> implements IIRetryManager<T>{
     private volatile Subject<T> subject;
-
+    /**
+     * 标记唯一一次请求  避免触发多次请求
+     */
     private volatile AtomicBoolean isSend;
+    /**
+     * 管理Rx生命周期
+     */
+    private ListCompositeDisposable listCompositeDisposable = new ListCompositeDisposable();
+    /**
+     * 结果额外监听  可以设置超时时间 避免不必要的请求
+     */
     private IRetryResult<T> iRetryResult;
     private T success, error;
     private Throwable throwable;
@@ -34,6 +40,21 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
         isSend = new AtomicBoolean();
         success = createSuccess();
         error = createError();
+    }
+
+    @Override
+    public Subject<T> getSubject() {
+        return subject;
+    }
+
+    /**
+     *  默认不拦截  这里可以重写 自己拦截
+     * @param data 数据
+     * @throws Exception
+     */
+    @Override
+    public void checked(T data) throws Exception {
+
     }
 
     /**
@@ -52,32 +73,13 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
      * @see #sendSuccess()  触发重试
      * @see #sendError(Throwable) 将不会触发重试
      */
-    public abstract void createObservableAndSend();
+    public abstract Disposable createObservableAndSend();
 
     /**
      * 设置结果监听  可以用来记录结果 设置结果的超市时间
      */
     public void setRetryResult(IRetryResult<T> iRetryResult) {
         this.iRetryResult = iRetryResult;
-    }
-
-    public Flowable<T> work(WorkFlowable<T> workFlowable) {
-        return Flowable.defer(workFlowable::create)
-                .map(this::checked)//检查是否成功
-                .compose(IRetry.makeFlowableTransformer(this, subject));//添加依附效果
-    }
-
-
-    public Single<T> work(WorkSingle<T> workSingle) {
-        return Single.defer(workSingle::create)
-                .map(this::checked)//检查是否成功
-                .compose(IRetry.makeSingleTransformer(this, subject));//添加依附效果
-    }
-
-    public Observable<T> work(WorkObservable<T> workPrepare) {
-        return Observable.defer(workPrepare::create)
-                .map(this::checked)//检查是否成功
-                .compose(IRetry.makeObservableTransformer(this, subject));//添加依附效果
     }
 
 
@@ -91,26 +93,17 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
                 IRetryLog.i("距离上个结果相差很短 直接发送最后一个结果...");
                 sendResult(iRetryResult.getResult(), false);
             } else {
-                IRetryLog.i("开始创建请求任务");
-                createObservableAndSend();
+                IRetryLog.i("开始创建请求任务,请等待...");
+                clear();
+               addDisposable(createObservableAndSend());
             }
         } else {
-            IRetryLog.i("任务正在进行...");
+            IRetryLog.i("任务正在进行,请等待结果...");
         }
     }
 
 
-    public interface WorkObservable<T> {
-        Observable<T> create();
-    }
 
-    public interface WorkSingle<T> {
-        Single<T> create();
-    }
-
-    public interface WorkFlowable<T> {
-        Flowable<T> create();
-    }
 
     /**
      * 发送成功
@@ -146,7 +139,10 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
         }
     }
 
-
+    /**
+     * 这里直接检测返回的结果 如果是 error 对象 直接抛出异常
+     * 当然用户可以重写
+     */
     @Override
     public void checkedResultSuccess(T t) throws Throwable {
         if (t == error) {
@@ -154,20 +150,9 @@ public abstract class IRetryManager<T> implements IRetryChecked<T>, ITransformer
         }
     }
 
-    /**
-     * 管理Rx生命周期
-     */
-    private ListCompositeDisposable listCompositeDisposable = new ListCompositeDisposable();
-
     protected void addDisposable(Disposable disposable) {
         if (disposable != null && !disposable.isDisposed()) {
             listCompositeDisposable.add(disposable);
-        }
-    }
-
-    protected void reDisposable(Disposable disposable) {
-        if (disposable != null) {
-            listCompositeDisposable.remove(disposable);
         }
     }
 

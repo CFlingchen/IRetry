@@ -37,8 +37,17 @@ dependencies {
     compile "com.android.support:support-v4:${project.supportLibVersion}"
     compile "com.android.support:appcompat-v7:${project.supportLibVersion}"
     compile "com.android.support:design:${project.supportLibVersion}"
+    //butterknife
     compile 'com.jakewharton:butterknife:8.7.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.7.0'
-    implementation 'com.github.CFlingchen:IRetry:v1.1'
-    //implementation project(':iretry')
+    //重试库
+    //implementation 'com.github.CFlingchen:IRetry:v1.1'
+    implementation project(':iretry')
+
+    //retrofit2 支持Rx
+    compile 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+    //retrofit2 转化器 gson
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    //retrofit2 log拦截器
+    compile 'com.squareup.okhttp3:logging-interceptor:3.8.0'
 }

@@ -1,15 +1,15 @@
 package com.lingchen.iretry.transformer;
 
-import android.annotation.SuppressLint;
+import com.lingchen.iretry.IIRetryManager;
 
-
-import com.lingchen.iretry.ITransformerListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Function;
-import io.reactivex.subjects.Subject;
 
 /**
  * Author    lingchen
@@ -19,33 +19,37 @@ import io.reactivex.subjects.Subject;
  */
 
 public class DefObservableTransformer<T> implements ObservableTransformer<T, T> {
-    private ITransformerListener<T> tiTransformer;
-
-    private Subject<T> subject;
-
-    public static <T> DefObservableTransformer<T> create(ITransformerListener<T> tiTransformer, Subject<T> subject) {
-        return new DefObservableTransformer<T>(tiTransformer, subject);
+    private List<IIRetryManager<T>> mRetryManagers=new ArrayList<>();
+    public static <T> DefObservableTransformer<T> create(IIRetryManager<T>... iRetryManager) {
+        return new DefObservableTransformer<T>(Arrays.asList(iRetryManager));
     }
 
-    private DefObservableTransformer(ITransformerListener<T> tiTransformer, Subject<T> subject) {
-        this.tiTransformer = tiTransformer;
-        this.subject = subject;
+    public static <T> DefObservableTransformer<T> create(List<IIRetryManager<T>> mRetryManagers) {
+        return new DefObservableTransformer<T>(mRetryManagers);
     }
 
-    @SuppressLint("LongLogTag")
-    public boolean isSend(Throwable throwable) {
-        if (tiTransformer == null || subject == null) return false;
-        return tiTransformer.intercept(throwable);
+    private DefObservableTransformer(List<IIRetryManager<T>> mRetryManagers) {
+        this.mRetryManagers.addAll(mRetryManagers);
+    }
+
+    public IIRetryManager getIRetryManager(Throwable throwable) {
+        for (IIRetryManager iiRetryManager:mRetryManagers) {
+            if(iiRetryManager!=null && iiRetryManager.intercept(throwable)){
+                return iiRetryManager;
+            }
+        }
+        return null;
     }
 
     @Override
     public ObservableSource<T> apply(Observable<T> upstream) {
         return upstream.retryWhen(throwableObservable -> throwableObservable.flatMap((Function<Throwable, ObservableSource<T>>) throwable -> {
-            if (isSend(throwable)) {
-                tiTransformer.start();
-                return subject.flatMap((Function<T, ObservableSource<T>>) t -> {
+            IIRetryManager iiRetryManager=getIRetryManager(throwable);
+            if (iiRetryManager!=null) {
+                iiRetryManager.start();
+                return iiRetryManager.getSubject().flatMap((Function<T, ObservableSource<T>>) t -> {
                     try {
-                        tiTransformer.checkedResultSuccess(t);
+                        iiRetryManager.checkedResultSuccess(t);
                         return Observable.just(t);
                     } catch (Throwable throwable2) {
                         throwable2.printStackTrace();

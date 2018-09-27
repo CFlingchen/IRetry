@@ -3,7 +3,9 @@ package com.lingchen.iretrydemo;
 
 import android.view.View;
 
+import com.lingchen.iretry.IRetry;
 import com.lingchen.iretry.IRetryLog;
+import com.lingchen.iretrydemo.iretry.SimpleNetRetryManager;
 import com.lingchen.iretrydemo.iretry.SimpleTokenRetryManager;
 
 import java.util.Random;
@@ -42,7 +44,12 @@ public class TestTokenActivity extends BaseActivity {
      * 模仿请求
      */
     public void sendPost(int tag) {
-        addDisposable(SimpleTokenRetryManager.newInstance().work(() -> send(tag, SimpleTokenRetryManager.token))
+        addDisposable(IRetry.with(() -> {
+                    //这里需要注意 这里不能添加任何其他操作符 否则无效
+                    //这里直接可以直接用retrfit的框架的调用方法
+                    //interface.send();
+                    return send(tag, SimpleTokenRetryManager.token);
+                }, SimpleTokenRetryManager.newInstance())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(integer -> IRetryLog.e(String.format("请求%d 成功{%s}", tag, integer.toString())),

@@ -10,6 +10,7 @@ import java.util.Random;
 import io.reactivex.Single;
 import io.reactivex.SingleOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -59,21 +60,29 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
      * 检查结果
      */
     @Override
-    public BaseEntry checked(BaseEntry data) throws Exception {
+    public void checked(BaseEntry data) throws Exception {
         //这里我只是判断了code  大家可以根据实际情况来分别
         //这里只要抛出异常即可  可以自定义异常
         if (!data.isSuccess()) throw new Exception("token过期");
-        return data;
+    }
+
+    /**
+     * 拦截异常
+     *
+     * @param throwable 异常
+     * @return 将会触发重新请求
+     */
+    @Override
+    public boolean intercept(Throwable throwable) {
+        return throwable.getMessage().equals("token过期");
     }
 
     /**
      * 创建请求
      */
     @Override
-    public void createObservableAndSend() {
-        //取消上一次监听
-        clear();
-        addDisposable(Single.create((SingleOnSubscribe<Integer>) emitter -> {
+    public Disposable createObservableAndSend() {
+        return Single.create((SingleOnSubscribe<Integer>) emitter -> {
             IRetryLog.d("开始获取token");
             Thread.sleep(random.nextInt(2) * 1000);
             if (random.nextInt(2) == 1) {
@@ -93,17 +102,8 @@ public class SimpleTokenRetryManager extends IRetryManager<BaseEntry> {
             }
         }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe());
+                .subscribe();
     }
 
-    /**
-     * 拦截异常
-     *
-     * @param throwable 异常
-     * @return 将会触发重新请求
-     */
-    @Override
-    public boolean intercept(Throwable throwable) {
-        return throwable.getMessage().equals("token过期");
-    }
+
 }
